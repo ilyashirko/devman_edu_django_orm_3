@@ -50,7 +50,6 @@ def fix_marks(student_name):
         return 'Sorry, there is no this student.'
     except MultipleObjectsReturned:
         return 'Sorry, too much students found.'
-    
 
 
 def remove_chastisements(student_name):
@@ -63,7 +62,6 @@ def remove_chastisements(student_name):
         return 'Sorry, there is no this student.'
     except MultipleObjectsReturned:
         return 'Sorry, too much students found.'
-    
 
 
 def create_commendation(student_name, subject_title):
@@ -73,7 +71,7 @@ def create_commendation(student_name, subject_title):
         return 'Not found requested student!'
     except MultipleObjectsReturned:
         return 'Sorry, too much students found.'
-    
+
     year_of_study = schoolkid.year_of_study
     group_letter = schoolkid.group_letter
 
@@ -84,7 +82,7 @@ def create_commendation(student_name, subject_title):
         )
     except ObjectDoesNotExist:
         return 'There is no such subject.'
-    
+
     lesson = random.choice(
         Lesson.objects.filter(
             year_of_study=year_of_study,
@@ -92,7 +90,7 @@ def create_commendation(student_name, subject_title):
             subject=subject
         )
     )
-    
+
     commendation = random.choice(COMMENDATIONS)
 
     Commendation.objects.create(
