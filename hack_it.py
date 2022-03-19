@@ -41,7 +41,7 @@ COMMENDATIONS = (
 
 def fix_marks(student_name):
     try:
-        schoolkid = Schoolkid.objects.get(full_name__contains=student_name)
+        schoolkid = Schoolkid.objects.get(full_name__contains=student_name.title())
         bad_marks = Mark.objects.filter(schoolkid=schoolkid, points__in=[2, 3])
         for mark in bad_marks:
             mark.points = 5
@@ -49,12 +49,14 @@ def fix_marks(student_name):
     except ObjectDoesNotExist:
         return 'Sorry, there is no this student.'
     except MultipleObjectsReturned:
-        return 'Sorry, too much students found.'
+        print('Sorry, too much students found.')
+        for student in Schoolkid.objects.filter(full_name__contains=student_name.title()):
+            print(student.full_name)
 
 
 def remove_chastisements(student_name):
     try:
-        schoolkid = Schoolkid.objects.get(full_name__contains=student_name)
+        schoolkid = Schoolkid.objects.get(full_name__contains=student_name.title())
         chastisements = Chastisement.objects.filter(schoolkid=schoolkid)
         for chastisement in chastisements:
             chastisement.delete()
@@ -66,7 +68,7 @@ def remove_chastisements(student_name):
 
 def create_commendation(student_name, subject_title):
     try:
-        schoolkid = Schoolkid.objects.get(full_name__contains=student_name)
+        schoolkid = Schoolkid.objects.get(full_name__contains=student_name.title())
     except ObjectDoesNotExist:
         return 'Not found requested student!'
     except MultipleObjectsReturned:
@@ -77,7 +79,7 @@ def create_commendation(student_name, subject_title):
 
     try:
         subject = Subject.objects.get(
-            title=subject_title,
+            title=subject_title.title(),
             year_of_study=year_of_study
         )
     except ObjectDoesNotExist:
