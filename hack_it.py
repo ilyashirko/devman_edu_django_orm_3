@@ -63,7 +63,9 @@ def remove_chastisements(student_name):
     except ObjectDoesNotExist:
         return 'Sorry, there is no this student.'
     except MultipleObjectsReturned:
-        return 'Sorry, too much students found.'
+        print('Sorry, too much students found.')
+        for student in Schoolkid.objects.filter(full_name__contains=student_name.title()):
+            print(student.full_name)
 
 
 def create_commendation(student_name, subject_title):
@@ -72,7 +74,10 @@ def create_commendation(student_name, subject_title):
     except ObjectDoesNotExist:
         return 'Not found requested student!'
     except MultipleObjectsReturned:
-        return 'Sorry, too much students found.'
+        print('Sorry, too much students found.')
+        for student in Schoolkid.objects.filter(full_name__contains=student_name.title()):
+            print(student.full_name)
+        return
 
     year_of_study = schoolkid.year_of_study
     group_letter = schoolkid.group_letter
