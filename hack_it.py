@@ -1,7 +1,5 @@
 import random
 
-from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
-
 from datacenter.models import (Chastisement, Commendation, Lesson, Mark,
                                Schoolkid, Subject)
 
@@ -39,46 +37,40 @@ COMMENDATIONS = (
 )
 
 
-def fix_marks(student_name):
+def find_student(student_name):
     try:
-        schoolkid = Schoolkid.objects.get(full_name__contains=student_name.title())
+        return Schoolkid.objects.get(full_name__contains=student_name.title())
+    except Schoolkid.DoesNotExist:
+        print('Sorry, there is no this student.')
+    except Schoolkid.MultipleObjectsReturned:
+        print('Sorry, too much students found.')
+        for student in Schoolkid.objects.filter(full_name__contains=student_name.title()):
+            print(student.full_name)
+
+
+
+def fix_marks(student_name):
+    schoolkid = find_student(student_name)
+    if schoolkid:
         bad_marks = Mark.objects.filter(schoolkid=schoolkid, points__in=[2, 3])
         for mark in bad_marks:
             mark.points = 5
             mark.save()
-    except ObjectDoesNotExist:
-        return 'Sorry, there is no this student.'
-    except MultipleObjectsReturned:
-        print('Sorry, too much students found.')
-        for student in Schoolkid.objects.filter(full_name__contains=student_name.title()):
-            print(student.full_name)
 
 
 def remove_chastisements(student_name):
-    try:
-        schoolkid = Schoolkid.objects.get(full_name__contains=student_name.title())
+    schoolkid = find_student(student_name)
+    if schoolkid:
         chastisements = Chastisement.objects.filter(schoolkid=schoolkid)
         for chastisement in chastisements:
             chastisement.delete()
-    except ObjectDoesNotExist:
-        return 'Sorry, there is no this student.'
-    except MultipleObjectsReturned:
-        print('Sorry, too much students found.')
-        for student in Schoolkid.objects.filter(full_name__contains=student_name.title()):
-            print(student.full_name)
 
 
 def create_commendation(student_name, subject_title):
-    try:
-        schoolkid = Schoolkid.objects.get(full_name__contains=student_name.title())
-    except ObjectDoesNotExist:
-        return 'Not found requested student!'
-    except MultipleObjectsReturned:
-        print('Sorry, too much students found.')
-        for student in Schoolkid.objects.filter(full_name__contains=student_name.title()):
-            print(student.full_name)
+    schoolkid = find_student(student_name)
+    if not schoolkid:
         return
-
+    
     year_of_study = schoolkid.year_of_study
     group_letter = schoolkid.group_letter
 
@@ -87,19 +79,18 @@ def create_commendation(student_name, subject_title):
             title=subject_title.title(),
             year_of_study=year_of_study
         )
-    except ObjectDoesNotExist:
-        return 'There is no such subject.'
+    except Subject.DoesNotExist:
+        print('There is no such subject.')
+        return
 
-    lesson = random.choice(
-        Lesson.objects.filter(
-            year_of_study=year_of_study,
-            group_letter=group_letter,
-            subject=subject
-        )
-    )
+    lesson = Lesson.objects.filter(
+        subject=subject,
+        year_of_study=year_of_study,
+        group_letter=group_letter
+    ).last()
 
     commendation = random.choice(COMMENDATIONS)
-
+    
     Commendation.objects.create(
         text=commendation,
         created=lesson.date,
